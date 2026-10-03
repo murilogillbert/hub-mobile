@@ -98,6 +98,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.WRITE_EXTERNAL_STORAGE',
       'android.permission.ACCESS_BACKGROUND_LOCATION',
       'android.permission.RECORD_AUDIO',
+      /**
+       * `SYSTEM_ALERT_WINDOW` ("desenhar sobre outros apps") entrava no APK **sem** ser
+       * pedida: vem do manifesto do `expo-dev-client`, por fusão de manifestos. Encontrada
+       * inspecionando o APK de release com `aapt2 dump badging` — nenhuma leitura desta
+       * configuração mostraria, porque a permissão não está declarada aqui.
+       *
+       * É permissão de alto risco: a Play Store exige justificativa, e é a que golpes de
+       * sobreposição de tela usam. Este app não tem uso legítimo para ela.
+       */
+      'android.permission.SYSTEM_ALERT_WINDOW',
     ],
     predictiveBackGestureEnabled: false,
   },
