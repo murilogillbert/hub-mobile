@@ -7,7 +7,7 @@
     "base": {
       "env": {
         "EXPO_PUBLIC_API_URL": "https://hubapi.opendriver.com.br",
-        "EXPO_PUBLIC_WEB_URL": "https://opendriverhub.com.br"
+        "EXPO_PUBLIC_WEB_URL": "https://hub.opendriver.com.br"
       }
     },
     "development": {

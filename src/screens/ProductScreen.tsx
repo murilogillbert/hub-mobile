@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { api } from '@/api/client';
 import { qk } from '@/api/queryKeys';
-import type { Product, ProductKind } from '@/api/types';
+import type { Product } from '@/api/types';
 import { RemoteImage } from '@/components/Media';
 import { useToast } from '@/components/Toast';
 import { Button } from '@/components/ui/Button';
@@ -12,30 +12,12 @@ import { QueryView } from '@/components/ui/States';
 import { AppText, Badge, Card, Divider, Icon, KeyValue, Row, SectionTitle } from '@/components/ui/primitives';
 import { useCart } from '@/context/CartContext';
 import { formatCurrency, formatDate } from '@/lib/format';
+import { FULFILMENT } from '@/lib/fulfilment';
 import { colors, spacing } from '@/theme/tokens';
 
-/**
- * Como o benefício chega até a pessoa — é a informação que decide a compra, então fica em
- * destaque. Nenhum dos três é consumido dentro do app: `digital` também é um código de resgate
- * usado no parceiro, e é por isso que nada aqui cai na regra de In-App Purchase da Apple.
- */
-const fulfilment: Record<ProductKind, { icon: 'qr-code-outline' | 'key-outline' | 'cube-outline'; title: string; detail: string }> = {
-  voucher: {
-    icon: 'qr-code-outline',
-    title: 'Voucher para apresentar',
-    detail: 'Depois de pagar, você recebe um QR e um código. Mostre no parceiro para resgatar.',
-  },
-  digital: {
-    icon: 'key-outline',
-    title: 'Benefício com código de resgate',
-    detail: 'Depois de pagar, você recebe um código de resgate para usar no parceiro.',
-  },
-  physical: {
-    icon: 'cube-outline',
-    title: 'Retirada ou entrega pelo parceiro',
-    detail: 'Combine a retirada ou a entrega direto com o parceiro, apresentando o código do pedido.',
-  },
-};
+// Como o benefício chega até a pessoa — é a informação que decide a compra, então fica em
+// destaque. A política mora em `@/lib/fulfilment` porque é ela que sustenta a isenção de
+// In-App Purchase, e lá tem teste; aqui é só apresentação.
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -51,7 +33,7 @@ function ProductView({ product }: { product: Product }) {
   const inCart = quantityOf(product.id);
   const out = product.stock <= 0;
   const cashback = (product.price * product.cashbackPercent) / 100;
-  const how = fulfilment[product.kind];
+  const how = FULFILMENT[product.kind];
 
   const addToCart = () => {
     add(product);

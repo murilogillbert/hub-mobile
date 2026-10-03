@@ -14,13 +14,30 @@ const SUFFIX = IS_PROD ? '' : VARIANT === 'preview' ? '.preview' : '.dev';
 const BUNDLE_ID = process.env.IOS_BUNDLE_ID ?? 'br.com.opendriverhub.app';
 const PACKAGE = process.env.ANDROID_PACKAGE ?? 'br.com.opendriverhub.app';
 const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
-const WEB_URL = (process.env.EXPO_PUBLIC_WEB_URL ?? 'https://opendriverhub.com.br').replace(/\/+$/, '');
+const WEB_URL = (process.env.EXPO_PUBLIC_WEB_URL ?? 'https://hub.opendriver.com.br').replace(/\/+$/, '');
+
+/**
+ * Domínios que sabidamente não existem. Verificado por DNS em 2026-10-02:
+ * `opendriverhub.com.br` não resolve e `opendriverhub.com` não tem registro algum. Eram o
+ * padrão daqui, e de `WEB_URL` saem as URLs de política de privacidade e de termos — que a
+ * revisão da Apple **abre**. Link morto é recusa.
+ *
+ * A guarda de https abaixo não pegava isso, porque `https://opendriverhub.com.br` é https
+ * válido e inexistente ao mesmo tempo. Daí a lista explícita.
+ */
+const DOMINIOS_MORTOS = ['opendriverhub.com.br', 'opendriverhub.com'];
 
 // Build de loja com API em http seria vazamento de token em rede aberta — falha aqui, não em revisão.
 if (VARIANT !== 'development') {
   const problems: string[] = [];
   if (!/^https:\/\//.test(API_URL)) problems.push(`EXPO_PUBLIC_API_URL deve ser https (recebido: "${API_URL}")`);
   if (!/^https:\/\//.test(WEB_URL)) problems.push('EXPO_PUBLIC_WEB_URL deve ser https');
+  for (const url of [API_URL, WEB_URL]) {
+    const morto = DOMINIOS_MORTOS.find((d) => url.includes(d));
+    if (morto) {
+      problems.push(`"${morto}" não existe (sem registro DNS). Use hub.opendriver.com.br.`);
+    }
+  }
   if (problems.length) throw new Error(`Configuração inválida para o build "${VARIANT}":\n- ${problems.join('\n- ')}`);
 }
 

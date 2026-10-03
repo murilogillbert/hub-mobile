@@ -16,7 +16,19 @@ const strip = (url: string) => url.replace(/\/+$/, '');
  * mesmo build. Em builds de loja o app.config.ts já recusou URL que não seja https.
  */
 const apiUrl = strip(process.env.EXPO_PUBLIC_API_URL || extra.apiUrl || 'http://localhost:5000');
-const webUrl = strip(process.env.EXPO_PUBLIC_WEB_URL || extra.webUrl || 'https://opendriverhub.com.br');
+/**
+ * Dominio do site do hub. **`opendriverhub.com.br` nao existe** — verificado por DNS em
+ * 2026-10-02, nao resolve, e `opendriverhub.com` nao tem registro algum. O dominio que serve o
+ * hub e `hub.opendriver.com.br`.
+ *
+ * Isto nao e detalhe de configuracao: daqui saem as URLs de politica de privacidade e de
+ * termos, e a revisao da Apple **abre** a de privacidade. Link morto e recusa. E como
+ * `EXPO_PUBLIC_*` e embutido no bundle em tempo de build, errar aqui so e descoberto depois de
+ * submeter.
+ */
+const webUrl = strip(
+  process.env.EXPO_PUBLIC_WEB_URL || extra.webUrl || 'https://hub.opendriver.com.br'
+);
 
 export const env = {
   variant: (extra.variant ?? 'development') as Variant,
@@ -30,11 +42,18 @@ export const env = {
   webUrl,
 } as const;
 
-/** As lojas exigem URL pública de política de privacidade e um canal de suporte. */
+/**
+ * As lojas exigem URL publica de politica de privacidade e um canal de suporte **que
+ * funcione** — o avaliador testa os dois.
+ *
+ * O e-mail de suporte usa `opendriver.com.br`, que e o dominio do ecossistema. O valor
+ * anterior era `suporte@opendriverhub.com`, num dominio sem registro DNS nenhum, entao a caixa
+ * nao existia. O envio sai pelo provedor configurado no hub (Gmail), nao por MX deste dominio.
+ */
 export const links = {
   privacyPolicy: process.env.EXPO_PUBLIC_PRIVACY_URL || `${webUrl}/privacidade`,
   terms: process.env.EXPO_PUBLIC_TERMS_URL || `${webUrl}/termos`,
-  supportEmail: process.env.EXPO_PUBLIC_SUPPORT_EMAIL || 'suporte@opendriverhub.com',
+  supportEmail: process.env.EXPO_PUBLIC_SUPPORT_EMAIL || 'suporte@opendriver.com.br',
   /** Telas que o app não cobre (parceiro/admin/financeiro) abrem aqui no navegador. */
   partnerArea: `${webUrl}/parceiro`,
 } as const;

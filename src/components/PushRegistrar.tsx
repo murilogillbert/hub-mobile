@@ -18,8 +18,10 @@ export function PushRegistrar() {
   useEffect(() => {
     if (status !== 'signedIn') return;
     let cancelled = false;
-    registerForPush().then((t) => {
-      if (!cancelled) token.current = t;
+    void registerForPush().then((resultado) => {
+      if (!cancelled && resultado.ok) {
+        token.current = resultado.token;
+      }
     });
     // Desregistra antes de a sessão ser apagada — depois o endpoint já recusaria.
     const remove = addSignOutHook(async () => {
