@@ -51,9 +51,31 @@ export const env = {
  * nao existia. O envio sai pelo provedor configurado no hub (Gmail), nao por MX deste dominio.
  */
 export const links = {
-  privacyPolicy: process.env.EXPO_PUBLIC_PRIVACY_URL || `${webUrl}/privacidade`,
-  terms: process.env.EXPO_PUBLIC_TERMS_URL || `${webUrl}/termos`,
-  supportEmail: process.env.EXPO_PUBLIC_SUPPORT_EMAIL || 'suporte@opendriver.com.br',
+  /**
+   * As páginas legais apontam para a **API**, não para o site.
+   *
+   * `${webUrl}/privacidade` e `${webUrl}/termos` **não existiam**: o roteador do SPA não
+   * registra esses caminhos, o nginx devolve `index.html` com status 200 para qualquer
+   * caminho (`try_files $uri /index.html`) e o catch-all do roteador redireciona para a home.
+   * O revisor da Apple abriria o link da política de privacidade e veria a página inicial da
+   * loja — e por `curl` isso é indistinguível de uma página real.
+   *
+   * Agora o backend serve as duas em `/legal/*`, com texto LGPD completo e identificação do
+   * controlador. Mesmo padrão e mesmo caminho do opendriver, para o ecossistema ter uma
+   * convenção só.
+   */
+  privacyPolicy: process.env.EXPO_PUBLIC_PRIVACY_URL || `${apiUrl}/legal/privacidade`,
+  terms: process.env.EXPO_PUBLIC_TERMS_URL || `${apiUrl}/legal/termos`,
+
+  /**
+   * Caixa que **recebe de verdade**, conferido por DNS.
+   *
+   * `suporte@opendriver.com.br` não recebia nada: o domínio publica `MX .` (null MX, que
+   * declara "este domínio não recebe e-mail"), `SPF -all` e `DMARC p=reject`. As duas lojas
+   * exigem canal de suporte funcional, e caixa morta é reprovação.
+   */
+  supportEmail: process.env.EXPO_PUBLIC_SUPPORT_EMAIL || 'murilogillbert@gmail.com',
+
   /** Telas que o app não cobre (parceiro/admin/financeiro) abrem aqui no navegador. */
   partnerArea: `${webUrl}/parceiro`,
 } as const;
