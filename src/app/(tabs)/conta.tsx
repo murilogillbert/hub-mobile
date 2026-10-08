@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '@/api/client';
 import { qk } from '@/api/queryKeys';
 import { RemoteImage } from '@/components/Media';
+import { Avatar } from '@/components/Avatar';
 import { useToast } from '@/components/Toast';
 import { Button } from '@/components/ui/Button';
 import { ListRow } from '@/components/ui/Controls';
@@ -74,7 +75,7 @@ export default function Conta() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <Screen edges={[]}>
         <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
-          <RemoteImage uri={me.avatarUrl} style={styles.avatar} rounded={32} accessibilityLabel="Sua foto" />
+          <Avatar nome={me.name} uri={me.avatarUrl} size={64} accessibilityLabel="Sua foto" />
           <View style={{ flex: 1, gap: 2 }}>
             <AppText variant="subtitle">{me.name}</AppText>
             <AppText variant="small">{me.email}</AppText>
