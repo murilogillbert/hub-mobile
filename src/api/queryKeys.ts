@@ -15,4 +15,10 @@ export const qk = {
   paymentStatus: (orderId: string) => ['order', orderId, 'payment'] as const,
   cashback: ['cashback'] as const,
   notifications: ['notifications'] as const,
+
+  /** Área do parceiro. Prefixo próprio para invalidar o ramo inteiro depois de salvar. */
+  partnerProducts: ['partner', 'products'] as const,
+  partnerStores: ['partner', 'stores'] as const,
+  partnerProductStores: (productId: string) =>
+    ['partner', 'products', productId, 'stores'] as const,
 };

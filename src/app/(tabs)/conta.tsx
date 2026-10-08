@@ -19,7 +19,7 @@ import { alertError, confirm } from '@/lib/recovery';
 import { colors, spacing } from '@/theme/tokens';
 
 export default function Conta() {
-  const { me, status, signOut, isWebOnlyRole } = useAuth();
+  const { me, status, signOut, isWebOnlyRole, isPartnerRole } = useAuth();
   const toast = useToast();
   const [sending, setSending] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -107,16 +107,46 @@ export default function Conta() {
           />
         </Card>
 
-        {isWebOnlyRole ? (
+        {/*
+          Duas condições diferentes de propósito.
+
+          `isPartnerRole` (partner/admin) libera o **balcão**: a rota `parceiro/venda` é
+          protegida pelo mesmo valor no `_layout`, e o backend exige `ROLES.partner`. Antes esta
+          seção inteira usava `isWebOnlyRole`, que inclui `financeiro` — e para um usuário
+          financeiro o toque em "Validar voucher" caía em "não encontrado", porque a rota nem
+          chega a ser registrada.
+
+          `isWebOnlyRole` libera o **atalho da web**, que faz sentido para os três papéis; o que
+          muda é para qual área ele aponta.
+        */}
+        {isPartnerRole ? (
           <>
             <SectionTitle title="Loja parceira" />
             <Card style={{ padding: spacing.xs }}>
               <ListRow icon="qr-code-outline" title="Validar voucher" subtitle="Ler o QR do cliente no balcão" onPress={() => router.push('/parceiro/venda')} />
               <ListRow
+                icon="pricetags-outline"
+                title="Meus produtos"
+                subtitle="Ajustar preço, estoque e disponibilidade por unidade"
+                onPress={() => router.push('/parceiro/produtos')}
+              />
+              <ListRow
                 icon="open-outline"
                 title="Painel do parceiro"
-                subtitle="Catálogo, unidades e métricas continuam na web"
+                subtitle="Cadastro, unidades, horários e métricas na web"
                 onPress={() => void WebBrowser.openBrowserAsync(links.partnerArea)}
+              />
+            </Card>
+          </>
+        ) : isWebOnlyRole ? (
+          <>
+            <SectionTitle title="Financeiro" />
+            <Card style={{ padding: spacing.xs }}>
+              <ListRow
+                icon="open-outline"
+                title="Painel financeiro"
+                subtitle="Saques e afiliados na web"
+                onPress={() => void WebBrowser.openBrowserAsync(links.financeiroArea)}
               />
             </Card>
           </>

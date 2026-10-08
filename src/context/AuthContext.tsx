@@ -17,6 +17,19 @@ interface AuthValue {
   isAppRole: boolean;
   /** Conta de parceiro/admin/financeiro: compra igual, mas a gestão fica na web. */
   isWebOnlyRole: boolean;
+  /**
+   * Pode operar o **balcão** (ler QR, resgatar voucher): `partner` ou `admin`.
+   *
+   * Separado de `isWebOnlyRole` por causa de um defeito concreto: aquele inclui `financeiro`, e
+   * a tela de conta usava ele para decidir se mostrava "Validar voucher". Mas a rota
+   * `parceiro/venda` é protegida por `partner`/`admin` no `_layout`, então para um usuário
+   * `financeiro` a rota **nem é registrada** — o toque caía em "não encontrado". E, se
+   * passasse, o backend recusaria com 403 (`ROLES.partner = ['Partner', 'Admin']`).
+   *
+   * A definição vive aqui, e não repetida na tela e no layout, exatamente para as duas não
+   * voltarem a divergir.
+   */
+  isPartnerRole: boolean;
   signIn(email: string, password: string): Promise<void>;
   signUp(input: Parameters<typeof api.auth.register>[0]): Promise<void>;
   signOut(): Promise<void>;
@@ -149,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       me,
       isAppRole: !!role && (APP_ROLES as readonly string[]).includes(role),
       isWebOnlyRole: role === 'partner' || role === 'admin' || role === 'financeiro',
+      isPartnerRole: role === 'partner' || role === 'admin',
       signIn,
       signUp,
       signOut,

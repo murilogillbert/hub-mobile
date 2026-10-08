@@ -18,6 +18,8 @@ import type {
   PaymentSnapshot,
   Product,
   ProductReviews,
+  ProductStoreStockPage,
+  ProductUpsert,
   RedeemResult,
   ReviewEligibility,
   ReviewItem,
@@ -93,8 +95,42 @@ export function createApi(http: HttpClient) {
       create: (input: { productId: string; rating: number; comment?: string }) => http.post<ReviewItem>('/reviews', input),
     },
     partner: {
-      /** Resgate no balcão: `confirm=false` só consulta o código, `true` efetiva o resgate. */
-      redeem: (code: string, confirm: boolean) => http.post<RedeemResult>(`/partner/redeem${qs({ confirm: String(confirm) })}`, { code }),
+      /**
+       * Resgate no balcão: `confirm=false` só consulta o código, `true` efetiva o resgate.
+       *
+       * `storeId` é opcional e só vai quando o balcão escolheu a unidade. Quando vai, o servidor
+       * grava quem atendeu e baixa a contagem daquela unidade; quando não vai, o comportamento é
+       * o de antes.
+       */
+      redeem: (code: string, confirm: boolean, storeId?: string) =>
+        http.post<RedeemResult>(
+          `/partner/redeem${qs({ confirm: String(confirm) })}`,
+          storeId ? { code, storeId } : { code },
+        ),
+
+      /**
+       * Gestão de produto **no app**, não só na web.
+       *
+       * Decisão do plano v2 (Frente D): mexer em preço e estoque é tarefa de todo dia, com o
+       * celular na mão atrás do balcão. Cadastrar unidade e ler métrica é tarefa de vez em
+       * quando, e para essas a web serve — por isso só produto vem para cá.
+       */
+      products: () => http.get<Product[]>('/partner/products'),
+      updateProduct: (id: string, body: ProductUpsert) =>
+        http.put<Product>(`/partner/products/${enc(id)}`, body),
+      createProduct: (body: ProductUpsert) => http.post<Product>('/partner/products', body),
+
+      /** Unidades da própria loja, para escolher o balcão no resgate. */
+      stores: () => http.get<PartnerStore[]>('/partner/stores'),
+
+      /** "Onde dá para retirar". Não é o estoque que autoriza a compra. */
+      productStores: (productId: string) =>
+        http.get<ProductStoreStockPage>(`/partner/products/${enc(productId)}/stores`),
+      setProductStores: (
+        productId: string,
+        items: { storeId: string; quantity: number; active: boolean }[],
+      ) =>
+        http.put<ProductStoreStockPage>(`/partner/products/${enc(productId)}/stores`, { items }),
     },
   };
 }

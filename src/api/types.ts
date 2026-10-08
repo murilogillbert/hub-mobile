@@ -56,10 +56,53 @@ export interface Product {
   imageUrl: string;
   category: string;
   rating: number;
+  /** Estoque da rede inteira. É o que autoriza a compra. */
   stock: number;
   digital: boolean;
   cities: string[];
   states: string[];
+  /**
+   * Unidades onde dá para retirar. Vazio com `storeStockDeclared: false` significa **todas**
+   * (nenhuma disponibilidade foi preenchida), não "nenhuma".
+   *
+   * Opcionais porque uma resposta vinda do cache do React Query, gravada antes do deploy, não
+   * os tem.
+   */
+  availableStores?: string[];
+  storeStockDeclared?: boolean;
+}
+
+/** Corpo do upsert de produto. Dinheiro em **reais decimais**, como a API do hub espera. */
+export interface ProductUpsert {
+  title: string;
+  description: string;
+  price: number;
+  cashbackPercent: number;
+  kind: string;
+  imageUrl: string;
+  category: string;
+  /** Estoque da rede. Disponibilidade por unidade é outra rota. */
+  stock: number;
+}
+
+export interface ProductStoreStockItem {
+  storeId: string;
+  storeName: string;
+  city: string;
+  state: string;
+  quantity: number;
+  active: boolean;
+  updatedAt: string | null;
+}
+
+export interface ProductStoreStockPage {
+  /**
+   * `false` quando o produto nunca teve disponibilidade preenchida — e aí está disponível em
+   * **todas** as unidades. Sem essa distinção a tela diria "esgotado em todo lugar" para um
+   * produto que o lojista apenas nunca preencheu.
+   */
+  declared: boolean;
+  items: ProductStoreStockItem[];
 }
 
 export interface CatalogQuery {

@@ -78,4 +78,12 @@ export const links = {
 
   /** Telas que o app não cobre (parceiro/admin/financeiro) abrem aqui no navegador. */
   partnerArea: `${webUrl}/parceiro`,
+  /**
+   * Área do papel `financeiro` no painel web.
+   *
+   * Existe porque a tela de conta mandava **todos** os papéis de gestão para `/parceiro`, e um
+   * usuário financeiro cairia num `RequireRole` que não o aceita — redirecionado para a home,
+   * sem explicação.
+   */
+  financeiroArea: `${webUrl}/financeiro`,
 } as const;

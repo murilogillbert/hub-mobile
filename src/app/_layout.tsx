@@ -36,7 +36,7 @@ export default function RootLayout() {
 }
 
 function RootNavigator() {
-  const { status, me } = useAuth();
+  const { status, me, isPartnerRole } = useAuth();
 
   useEffect(() => {
     if (status !== 'loading') SplashScreen.hideAsync().catch(() => undefined);
@@ -47,7 +47,10 @@ function RootNavigator() {
   const signedIn = status === 'signedIn';
   // Catálogo é aberto: dá pra navegar e montar carrinho sem conta, e o login só é exigido no
   // checkout. Exigir conta na abertura derruba conversão e não protege nada.
-  const isPartner = me?.role === 'partner' || me?.role === 'admin';
+  //
+  // `isPartnerRole` vem do contexto, e não é recalculado aqui: a tela de conta usa o mesmo
+  // valor para decidir se mostra "Validar voucher", e a cópia local foi justamente o que
+  // deixou as duas divergirem (a tela mostrava para `financeiro`, esta rota não existia).
 
   return (
     <Stack
@@ -81,9 +84,11 @@ function RootNavigator() {
         <Stack.Screen name="conta/excluir" options={{ title: 'Excluir conta' }} />
       </Stack.Protected>
 
-      {/* Balcão da loja: ler o QR do cliente e efetivar o resgate. */}
-      <Stack.Protected guard={signedIn && isPartner}>
+      {/* Balcão da loja: ler o QR do cliente, efetivar o resgate e ajustar preço/estoque. */}
+      <Stack.Protected guard={signedIn && isPartnerRole}>
         <Stack.Screen name="parceiro/venda" options={{ title: 'Validar voucher' }} />
+        <Stack.Screen name="parceiro/produtos" options={{ title: 'Meus produtos' }} />
+        <Stack.Screen name="parceiro/produto/[id]" options={{ title: 'Ajustar produto' }} />
       </Stack.Protected>
 
       <Stack.Screen name="sobre" options={{ title: 'Sobre' }} />
